@@ -28,6 +28,17 @@
   --font-jp:'Noto Sans JP','Hiragino Kaku Gothic ProN',sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box}
+
+#boot-loader{position:fixed;inset:0;z-index:9999;background:var(--bg);display:none;
+  flex-direction:column;align-items:center;justify-content:center;gap:16px}
+body.restoring #boot-loader{display:flex}
+body.restoring #app-root{visibility:hidden}
+.boot-spinner{width:34px;height:34px;border-radius:50%;
+  border:2.5px solid rgba(150,165,255,.25);border-top-color:var(--blue-bright);
+  animation:boot-spin .8s linear infinite}
+@keyframes boot-spin{to{transform:rotate(360deg)}}
+.boot-text{color:var(--muted);font-size:12px;letter-spacing:.14em;font-family:var(--font-ui)}
+@media (prefers-reduced-motion: reduce){.boot-spinner{animation:none}}
 html,body{background:var(--bg);color:var(--text);font-family:var(--font-ui);-webkit-font-smoothing:antialiased}
 body{min-height:100vh;display:flex;justify-content:center}
 
@@ -223,8 +234,18 @@ input:focus{outline:none;border-color:var(--blue-bright);box-shadow:0 0 0 3px rg
 </style>
 </head>
 <body>
-<canvas id="stars"></canvas>
-<div class="app">
+<script>
+  // ?id= があるページは、読み込み完了まで1ページ目が一瞬見えないよう先に隠す
+  if(new URLSearchParams(window.location.search).get('id')){
+    document.body.classList.add('restoring');
+  }
+</script>
+<canvas id="stars"></canvas></canvas>
+<div id="boot-loader">
+  <div class="boot-spinner"></div>
+  <div class="boot-text">LOADING…</div>
+</div>
+<div class="app" id="app-root">
 
   <!-- ============ 1. EVENT ============ -->
   <section class="screen active" id="s-event">
@@ -515,6 +536,9 @@ async function tryRestoreFromId(){
   const params=new URLSearchParams(window.location.search);
   const id=params.get('id');
   if(!id || !SHEET_WEBHOOK_URL) return false;
+
+  document.body.classList.add('restoring'); // 復元が終わるまで1ページ目を隠す
+
   try{
     const res=await fetch(SHEET_WEBHOOK_URL+'?id='+encodeURIComponent(id));
     const json=await res.json();
@@ -532,11 +556,13 @@ async function tryRestoreFromId(){
       buildPass();
       go('s-pass');
       showTabs();
+      document.body.classList.remove('restoring');
       return true;
     }
   }catch(err){
     console.error('マイページの復元に失敗しました', err);
   }
+  document.body.classList.remove('restoring'); // 復元できなかった場合は通常の1ページ目を表示
   return false;
 }
 tryRestoreFromId();
