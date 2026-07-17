@@ -187,6 +187,9 @@ input:focus{outline:none;border-color:var(--blue-bright);box-shadow:0 0 0 3px rg
 .pass-planet{width:34px;height:34px;opacity:.9}
 .pass-fields{position:relative;margin-top:22px}
 .pf{margin-bottom:14px}
+.free-badge{display:inline-block;color:#9dffb0;background:rgba(74,222,107,.14);
+  border:2px solid #4ade6b;font-weight:800;letter-spacing:.06em;padding:2px 10px;border-radius:6px;font-size:14px;
+  box-shadow:0 0 12px rgba(74,222,107,.35)}
 .pf .k{font-size:9.5px;letter-spacing:.1em;color:#aeb6e6;font-weight:600}
 .pf .v{font-size:16px;font-weight:600;letter-spacing:.03em;margin-top:4px}
 .pass-cut{position:relative;border-top:1.5px dashed rgba(255,255,255,.35);margin:18px -22px 0;padding-top:20px}
@@ -376,6 +379,7 @@ input:focus{outline:none;border-color:var(--blue-bright);box-shadow:0 0 0 3px rg
         <div class="pf"><div class="k">TIME</div><div class="v">2PM – 8PM</div></div>
         <div class="pf"><div class="k">PLACE</div><div class="v">SECRET LOCATION</div></div>
         <div class="pf"><div class="k">INVITED BY</div><div class="v" id="p-invitedby">BEAT SPACE</div></div>
+        <div class="pf" id="p-entry-row" style="display:none"><div class="k">ENTRY</div><div class="v free-badge">FREE</div></div>
       </div>
       <div class="pass-cut">
         <div class="qr-wrap"><div class="qr-box" id="qr"></div></div>
@@ -507,7 +511,7 @@ const PERFORMERS = {
   'kei':'KEI',
   'yukiy':'YUKIY',
   'rean':'Rean',
-  'shippo':'SIPPO',
+  'sippo':'SIPPO',
   'akira':'Akira',
   'minato':'Minato',
   '9for':'9for',
@@ -516,7 +520,8 @@ const PERFORMERS = {
   'rered':'ReRED',
   'zton':'Z-TON',
   'oversleep':'oversleep',
-  'defmonk':'Def Monk inc.'
+  'defmonk':'Def Monk inc.',
+  'staff':'BEAT SPACE(関係者)'
 };
 function getInvitedBy(){
   const ref=(new URLSearchParams(window.location.search).get('ref')||'').toLowerCase().trim();
@@ -525,6 +530,12 @@ function getInvitedBy(){
 const INVITED_BY = getInvitedBy();
 document.getElementById('invited-name-p1').textContent = INVITED_BY;
 document.getElementById('p-invitedby').textContent = INVITED_BY;
+
+function updateFreeBadge(guestOfValue){
+  const isFree = (guestOfValue||'').indexOf('関係者') !== -1;
+  document.getElementById('p-entry-row').style.display = isFree ? '' : 'none';
+}
+updateFreeBadge(INVITED_BY);
 
 /* ---------- state (in-memory) ---------- */
 const state={name:'',email:'',gender:'',age:'',companions:[]};
@@ -557,6 +568,7 @@ async function tryRestoreFromId(){
       const restoredGuestOf=d['Guest Of']||INVITED_BY;
       document.getElementById('p-invitedby').textContent=restoredGuestOf;
       document.getElementById('invited-name-p1').textContent=restoredGuestOf;
+      updateFreeBadge(restoredGuestOf);
       buildPass();
       go('s-pass');
       showTabs();
