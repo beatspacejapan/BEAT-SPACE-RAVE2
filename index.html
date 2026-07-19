@@ -190,6 +190,9 @@ input:focus{outline:none;border-color:var(--blue-bright);box-shadow:0 0 0 3px rg
 .free-badge{display:inline-block;color:#9dffb0;background:rgba(74,222,107,.14);
   border:2px solid #4ade6b;font-weight:800;letter-spacing:.06em;padding:2px 10px;border-radius:6px;font-size:14px;
   box-shadow:0 0 12px rgba(74,222,107,.35)}
+.invite-badge{display:inline-block;color:#9fdcff;background:rgba(60,180,255,.14);
+  border:2px solid #4db8ff;font-weight:800;letter-spacing:.03em;padding:2px 10px;border-radius:6px;font-size:14px;
+  box-shadow:0 0 12px rgba(60,180,255,.35)}
 .pf .k{font-size:9.5px;letter-spacing:.1em;color:#aeb6e6;font-weight:600}
 .pf .v{font-size:16px;font-weight:600;letter-spacing:.03em;margin-top:4px}
 .pass-cut{position:relative;border-top:1.5px dashed rgba(255,255,255,.35);margin:18px -22px 0;padding-top:20px}
@@ -379,7 +382,7 @@ input:focus{outline:none;border-color:var(--blue-bright);box-shadow:0 0 0 3px rg
         <div class="pf"><div class="k">TIME</div><div class="v">2PM – 8PM</div></div>
         <div class="pf"><div class="k">PLACE</div><div class="v">SECRET LOCATION</div></div>
         <div class="pf"><div class="k">INVITED BY</div><div class="v" id="p-invitedby">BEAT SPACE</div></div>
-        <div class="pf" id="p-entry-row" style="display:none"><div class="k">ENTRY</div><div class="v free-badge">FREE</div></div>
+        <div class="pf" id="p-entry-row" style="display:none"><div class="k">ENTRY</div><div class="v" id="p-entry-badge">FREE</div></div>
       </div>
       <div class="pass-cut">
         <div class="qr-wrap"><div class="qr-box" id="qr"></div></div>
@@ -521,7 +524,8 @@ const PERFORMERS = {
   'zton':'Z-TON',
   'oversleep':'oversleep',
   'defmonk':'Def Monk inc.',
-  'staff':'BEAT SPACE(関係者)'
+  'staff':'BEAT SPACE(関係者)',
+  'invite2000':'BEAT SPACE(招待)'
 };
 function getInvitedBy(){
   const ref=(new URLSearchParams(window.location.search).get('ref')||'').toLowerCase().trim();
@@ -532,8 +536,20 @@ document.getElementById('invited-name-p1').textContent = INVITED_BY;
 document.getElementById('p-invitedby').textContent = INVITED_BY;
 
 function updateFreeBadge(guestOfValue){
-  const isFree = (guestOfValue||'').indexOf('関係者') !== -1;
-  document.getElementById('p-entry-row').style.display = isFree ? '' : 'none';
+  const v = guestOfValue || '';
+  const row = document.getElementById('p-entry-row');
+  const badge = document.getElementById('p-entry-badge');
+  if(v.indexOf('関係者') !== -1){
+    badge.textContent = 'FREE';
+    badge.className = 'v free-badge';
+    row.style.display = '';
+  }else if(v.indexOf('招待') !== -1){
+    badge.textContent = '¥2,000';
+    badge.className = 'v invite-badge';
+    row.style.display = '';
+  }else{
+    row.style.display = 'none';
+  }
 }
 updateFreeBadge(INVITED_BY);
 
