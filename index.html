@@ -457,7 +457,7 @@ input:focus{outline:none;border-color:var(--blue-bright);box-shadow:0 0 0 3px rg
           <div class="flow-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M7 4l5 7M17 4l-5 7M12 11v9M8 14h8M8 17h8"/></svg></div>
           <div class="flow-dots"></div>
         </div>
-        <div class="flow-body"><div class="flow-en">PAY AT ENTRANCE</div><div class="flow-jp">エントランスで参加費をお支払い<br>(ADV ¥3,000 / DOOR ¥3,500)</div></div>
+        <div class="flow-body"><div class="flow-en">PAY AT ENTRANCE</div><div class="flow-jp">エントランスで参加費をお支払い<br>(<span id="pay-entrance-fee">ADV ¥3,000 / DOOR ¥3,500</span>)</div></div>
       </div>
       <div class="flow-item">
         <div class="flow-rail">
@@ -472,10 +472,13 @@ input:focus{outline:none;border-color:var(--blue-bright);box-shadow:0 0 0 3px rg
         <span class="fee-label">ENTRY FEE</span>
         <span class="fee-note">当日エントランスでお支払いください</span>
       </div>
-      <div class="fee-amounts">
+      <div class="fee-amounts" id="fee-amounts-normal">
         <span class="k">ADV</span><span class="v">¥3,000</span>
         <span class="fee-sep">/</span>
         <span class="k">DOOR</span><span class="v">¥3,500</span>
+      </div>
+      <div class="fee-amounts" id="fee-amounts-special" style="display:none">
+        <span class="v" id="fee-amounts-special-text">—</span>
       </div>
     </div>
     <div class="tabbar" data-tabbar></div>
@@ -577,7 +580,9 @@ const PERFORMERS = {
   'sippo':'SIPPO',
   'din':'_DiN',
   'staff':'関係者(FREE)',
-  'invite2000':'招待(¥2,000)'
+  'invite2000':'招待(¥2,000)',
+  'uzning2000':'Uzning 招待(¥2,000)',
+  'defmonk2000':'Def Monk inc. 招待(¥2,000)'
 };
 function getInvitedBy(){
   const ref=(new URLSearchParams(window.location.search).get('ref')||'').toLowerCase().trim();
@@ -604,6 +609,30 @@ function updateFreeBadge(guestOfValue){
   }
 }
 updateFreeBadge(INVITED_BY);
+
+function updateFeeDisplay(guestOfValue){
+  const v = guestOfValue || '';
+  const normal = document.getElementById('fee-amounts-normal');
+  const special = document.getElementById('fee-amounts-special');
+  const specialText = document.getElementById('fee-amounts-special-text');
+  const payEntranceFee = document.getElementById('pay-entrance-fee');
+  if(v.indexOf('関係者') !== -1){
+    normal.style.display = 'none';
+    special.style.display = '';
+    specialText.textContent = '関係者(FREE)';
+    payEntranceFee.textContent = '関係者(FREE)';
+  }else if(v.indexOf('招待') !== -1){
+    normal.style.display = 'none';
+    special.style.display = '';
+    specialText.textContent = '招待(¥2,000)';
+    payEntranceFee.textContent = '招待(¥2,000)';
+  }else{
+    normal.style.display = '';
+    special.style.display = 'none';
+    payEntranceFee.textContent = 'ADV ¥3,000 / DOOR ¥3,500';
+  }
+}
+updateFeeDisplay(INVITED_BY);
 
 /* ---------- state (in-memory) ---------- */
 const state={name:'',email:'',gender:'',age:'',companions:[]};
@@ -637,6 +666,7 @@ async function tryRestoreFromId(){
       document.getElementById('p-invitedby').textContent=restoredGuestOf;
       document.getElementById('invited-name-p1').textContent=restoredGuestOf;
       updateFreeBadge(restoredGuestOf);
+      updateFeeDisplay(restoredGuestOf);
       buildPass();
       go('s-pass');
       showTabs();
